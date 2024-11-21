@@ -86,11 +86,74 @@ export async function booksRouter(app: FastifyInstance) {
     return reply.status(201).send();
   });
 
-  app.put('/:id', () => {
-    // Implement PUT route for updating a book
+  app.put('/:id', async (request, reply) => {
+    const updateBookBodySchema = z.object({
+      title: z.string(),
+      genrer: z.string(),
+      author: z.string(),
+    });
+
+    const { title, author, genrer } = updateBookBodySchema.parse(request.body);
+
+    const getBookParamsSchema = z.object({
+      id: z.string().uuid(),
+    });
+
+    const { id } = getBookParamsSchema.parse(request.params);
+
+    const { sessionId } = request.cookies;
+
+    const book = await knex('books')
+      .where({
+        id,
+        session_id: sessionId,
+      })
+      .first();
+
+    if (!book) {
+      return reply.status(404).send({ message: 'Livro não encontrado' });
+    }
+
+    await knex('books')
+      .where({
+        id,
+        session_id: sessionId,
+      })
+      .update({
+        title:title,
+        author: author,
+        genrer: genrer,
+      });
+
+    return reply.status(200).send();
   });
 
-  app.delete('/:id', () => {
-    // Implement DELETE route for deleting a book
+  app.delete('/:id', async (request, reply) => {
+    const { sessionId } = request.cookies;
+
+    const getBookParamsSchema = z.object({
+      id: z.string().uuid(),
+    });
+
+    const { id } = getBookParamsSchema.parse(request.params);
+
+    const book = await knex('books')
+      .where({
+        id,
+        session_id: sessionId,
+      })
+      .first();
+
+    if (!book) {
+      return reply.status(404).send({ message: 'Livro não encontrado' });
+    }
+    await knex('books')
+      .where({
+        id,
+        session_id: sessionId,
+      })
+      .del();
+
+    return reply.status(204).send();
   });
 }

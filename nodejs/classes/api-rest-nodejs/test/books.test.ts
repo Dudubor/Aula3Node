@@ -88,3 +88,37 @@ describe('Books routes', () => {
   it.todo('should be able to edit a specific book', () => {});
   it.todo('should be able to delete a specific book', () => {});
 });
+
+
+describe('Endpoints de Livros', () => {
+  it('deve editar um livro existente', async () => {
+      const response = await request(app.server)
+          .put('/books/1')
+          .send({ titulo: 'Novo Título', autor: 'Novo Autor', genero: 'Novo Gênero' });
+
+      expect(response.status).toBe(200);
+      expect(response.body.titulo).toBe('Novo Título');
+  });
+
+  it('deve retornar 404 ao editar um livro que não existe', async () => {
+      const response = await request(app.server)
+          .put('/books/999')
+          .send({ titulo: 'Título Inexistente' });
+
+      expect(response.status).toBe(404);
+  });
+
+  it('deve deletar um livro existente', async () => {
+      const response = await request(app.server)
+          .delete('/books/1');
+
+      expect(response.status).toBe(204);
+  });
+
+  it('deve retornar 404 ao deletar um livro que não existe', async () => {
+      const response = await request(app.server)
+          .delete('/books/999');
+
+      expect(response.status).toBe(404);
+  });
+});
